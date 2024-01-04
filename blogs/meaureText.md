@@ -11,9 +11,10 @@ https://html.spec.whatwg.org/multipage/canvas.html#dom-context-2d-measuretext
 > The text preparation algorithm is as follows. It takes as input a string text, a CanvasTextDrawingStyles object target, and an optional length maxWidth. It returns an array of glyph shapes, each positioned on a common coordinate space, a physical alignment whose value is one of left, right, and center, and an inline box. (Most callers of this algorithm ignore the physical alignment and the inline box.)
 https://html.spec.whatwg.org/multipage/canvas.html#text-preparation-algorithm
 
-![inline box 支持更改的 css 属性](image.png)
+inline box 支持更改的 css 属性:
+![inline box 支持更改的 css 属性](measureText/image.png)
 
-常规的用法如下：
+常规的用法如下:
 
 ```js
 const ctx = canvas.getContext('2d');
@@ -36,14 +37,16 @@ ctx.letterSpacing = '10px';
 const metrics = ctx.measureText('Hello World');
 ```
 语法上没有问题，但是很遗憾， **Safari 不支持**
-![letterSpacing 兼容性](image-1.png)
+![letterSpacing 兼容性](measureText/image-1.png)
 那能表示在 FireFox、Chrome 等浏览器中，`letterSpacing` 能符合预期的工作了吗？
-不全是，**Chrome 实现了一个非标准声明的功能，`ctx.letterSpacing` 未显式定义时，会继承 `canvas.style.letterSpacing`**
+
+不全是
+**Chrome 实现了一个非标准的功能，`ctx.letterSpacing` 未显式定义时，会继承 `canvas.style.letterSpacing`**
 
 相关参考链接：
 >https://github.com/CreateJS/EaselJS/issues/872
-https://stackoverflow.com/questions/8952909/letter-spacing-in-canvas-element/8955835#8955835
-https://jsfiddle.net/hg4pbsne/1/
+>https://stackoverflow.com/questions/8952909/letter-spacing-in-canvas-element/8955835#8955835
+>https://jsfiddle.net/hg4pbsne/1/
 
 ```html
 <style>canvas {letter-spacing: 0.1em}</style>
@@ -68,5 +71,18 @@ ctx.letterSpacing = getComputedStyle(canvas).letterSpacing;
 如果想完全屏蔽样式的影响，也可以使用 [OffscreenCanvas](https://developer.mozilla.org/zh-CN/docs/Web/API/OffscreenCanvas) 来进行文本测量，它的兼容性已经非常不错了
 
 只是浏览器实现差异，我们还能接受，但是 Chrome 上的这点就得小心了
+如果你在电脑上尝试了给 Canvas 元素设置 `letter-spacing` 样式，然后进行文本宽度测量，会发现测量结果大概率不是 88px
+可能是 96px、100px 甚至更高，这是因为现在的设备分辨率普遍较高，而 **`ctx.measureText` 对于 `canvas.style.letterSpacing` 的转换会受到 `window.devicePixelRatio` 的影响**
 
-WIP
+调试发现，在 `window.devicePixelRatio` 为 2 的网页下，`ctx.measureText` 得到的宽度是 
+`20 * 4 + 20 * 0.1 * 4 * 2 = 96`
+> 这里还有一个细节： Chrome 和 FireFox 中对网页的缩放会改变 `window.devicePixelRatio` 而 Safari 不会
+> https://stackoverflow.com/questions/70648442/why-doesnt-window-devicepixelratio-change-on-zoom-in-safari
+
+## 总结
+1. `measureText` 是一个很棒的测量文本宽度的 api
+2. Chrome 和 FireFox 支持 `letterSpacing` 的设置，而 Safari 不支持
+3. Chrome 实现的非标准功能，`canvas.style.letterSpacing` 会作用于 `measureText`
+4. Chrome 通过 `canvas.style.letterSpacing` 计算最终值使用值时会受到 `window.devicePixelRatio` 的影响
+5. 无需设置 `letterSpacing` 可以优先使用 `OffscreenCanvas`，避免受到网页样式影响
+6. 使用 Canvas 标签进行文本测量时，显式指定 `ctx.letterSpacing`，即使 0px，避免网页样式影响同时保持不同的 DPR 下表现一致
