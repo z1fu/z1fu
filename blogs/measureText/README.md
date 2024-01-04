@@ -1,6 +1,6 @@
 # measureText 与 letterSpacing
 ## measureText
-不同于 DOM 方便的文字排版，在 Canvas 中想要实现文本换行、溢出隐藏/截断等功能，[`measureText`](https://developer.mozilla.org/zh-CN/docs/Web/API/CanvasRenderingContext2D/measureText) 是注定绕不开的 api
+不同于 DOM 方便的文字排版，在 canvas 中想要实现文本换行、溢出隐藏/截断等功能，[`measureText`](https://developer.mozilla.org/zh-CN/docs/Web/API/CanvasRenderingContext2D/measureText) 是注定绕不开的 api
 
 根据 HTML 标准描述：
 >The measureText(text) method steps are to run the text preparation algorithm, passing it text and the object implementing the CanvasText interface, and then using the returned inline box must return a new TextMetrics object with members behaving as described in the following list:
@@ -29,7 +29,7 @@ console.log(metrics.width);
 ## letterSpacing
 想着重介绍的是 [`letter-spacing`](https://developer.mozilla.org/en-US/docs/Web/CSS/letter-spacing)
 
-这个属性在 CSS 中是设置文字间距的，但在 Canvas 中使用时，它的表现需要特别注意
+这个属性在 CSS 中是设置文字间距的，但在 canvas 中使用时，它的表现需要特别注意
 
 当我们想在 `measureText` 时，设置文字间距应该怎么做？
 
@@ -47,11 +47,11 @@ const metrics = ctx.measureText('Hello World');
 **Chrome 实现了一个非标准的功能，`ctx.letterSpacing` 未显式定义时，会继承 `canvas.style.letterSpacing`**
 
 相关参考链接：
-> https://github.com/CreateJS/EaselJS/issues/872
-  https://stackoverflow.com/questions/8952909/letter-spacing-in-canvas-element/8955835#8955835
-  https://jsfiddle.net/hg4pbsne/1/
+> - https://github.com/CreateJS/EaselJS/issues/872
+> - https://stackoverflow.com/questions/8952909/letter-spacing-in-canvas-element/8955835#8955835
+> - https://jsfiddle.net/hg4pbsne/1/
 
-先来看一个例子:
+先看一个例子:
 
 ```html
 <style>canvas{letter-spacing: 0.1em}</style>
@@ -65,7 +65,7 @@ const metrics = ctx.measureText('Hello World');
   console.log(metrics.width); // 88px
 </script>
 ```
-这个场景下，Chrome 中 `ctx.letterSpacing` 打印是 0px，`canvas.style.letterSpacing` 是 `0.1em`，最终 `metrics.width` 测得 88px，**而 FireFox 中是 80px**，原因就如前文所说，这是 Chrome 独家秘方
+这个例子中，Chrome 中 `ctx.letterSpacing` 打印是 0px，`canvas.style.letterSpacing` 是 `0.1em`，最终 `metrics.width` 测得 88px，**而 FireFox 中是 80px**，原因就如前文所说，这是 Chrome 私人订制
 
 **项目中遇到测量的宽度不符合预期时，记得检查一下 canvas 标签的样式**
 
@@ -79,7 +79,7 @@ ctx.letterSpacing = getComputedStyle(canvas).letterSpacing;
 
 只是浏览器之间有差异，还能接受，事实上 Chrome 里还有值得注意的点
 
-如果你在电脑上尝试了给 Canvas 元素设置 `letter-spacing` 样式，然后进行文本宽度测量
+如果你真的在电脑上尝试了给 canvas 标签设置 `letter-spacing` 样式，然后进行文本宽度测量
 
 会发现测量结果大概率不是 88px
 
@@ -87,7 +87,7 @@ ctx.letterSpacing = getComputedStyle(canvas).letterSpacing;
 
 而 **`ctx.measureText` 对于 `canvas.style.letterSpacing` 的转换会受到 `window.devicePixelRatio` 的影响**
 
-调试发现，在 `window.devicePixelRatio` 为 2 的网页下，`ctx.measureText` 得到的宽度是 
+测试发现，在 `window.devicePixelRatio` 为 2 的网页下，`ctx.measureText` 得到的宽度是 
 `20 * 4 + 20 * 0.1 * 4 * 2 = 96`
 
 
@@ -111,7 +111,7 @@ function getWidth() {
 对此在 [stackoverflow](https://stackoverflow.com/questions/8952909/letter-spacing-in-canvas-element/8955835#8955835) 中搜到的他人解释
 ![re-get the canvas 2d ](image-2.png)
 
-经过调试，目前最新版本的 Chrome ctx 的重新获取已经不是刚需
+测试发现，目前最新版本的 Chrome 重新获取 2d 上下文已经不是刚需
 
 重新设置 `ctx.font` 也能触发文字间距的重新转换
 
@@ -127,12 +127,12 @@ function getWidth() {
   console.log(ctx.measureText('一段文本').width);
 }
 ```
-这样打印出来的宽度就会随着 DPR 的变化而变化了
+这样打印出来的宽度就会是随着 DPR 的变化而变化的奇怪且又能解释的数值了
 
 ## 总结
 - `measureText` 是一个很棒的测量文本宽度的 api
 - Chrome 和 FireFox 支持 `letterSpacing` 的设置，而 Safari 不支持
-- Chrome 实现的非标准功能，`canvas.style.letterSpacing` 会作用于 `measureText`
-- Chrome 通过 `canvas.style.letterSpacing` 计算最终值使用值时会受到 `window.devicePixelRatio` 的影响
+- Chrome 实现的非标准功能，未设置 `ctx.letterSpacing` 时 `canvas.style.letterSpacing` 会作用于 `measureText`
+- Chrome 通过 `canvas.style.letterSpacing` 计算最终间距数值时会受到 `window.devicePixelRatio` 的影响
 - 无需设置 `letterSpacing` 可以优先使用 `OffscreenCanvas`，避免受到网页样式影响
-- 使用 Canvas 标签进行文本测量时，显式指定 `ctx.letterSpacing`，即使 0px，避免网页样式影响同时保持不同的 DPR 下表现一致
+- 使用 canvas 标签进行文本测量时，可以显式指定 `ctx.letterSpacing`，即使 0px，即避免网页样式影响又保持不同的 DPR 下表现一致
