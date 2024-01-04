@@ -12,7 +12,7 @@ https://html.spec.whatwg.org/multipage/canvas.html#dom-context-2d-measuretext
 https://html.spec.whatwg.org/multipage/canvas.html#text-preparation-algorithm
 
 inline box 支持更改的 css 属性:
-![inline box 支持更改的 css 属性](measureText/image.png)
+![inline box 支持更改的 css 属性](image.png)
 
 常规的用法如下:
 
@@ -39,7 +39,7 @@ ctx.letterSpacing = '10px';
 const metrics = ctx.measureText('Hello World');
 ```
 语法上没有问题，但是很遗憾， **Safari 不支持**
-![letterSpacing 兼容性](measureText/image-1.png)
+![letterSpacing 兼容性](image-1.png)
 那能表示在 FireFox、Chrome 等浏览器中，`letterSpacing` 能符合预期的工作了吗？
 
 不全是！！
@@ -109,7 +109,7 @@ function getWidth() {
 ```
 `window.devicePixelRatio` 为 2 时，`getWidth` 得到的宽度是 96px 没问题，当缩放屏幕使得 `window.devicePixelRatio` 为变为 3 时，再次执行 `getWidth`，**会发现得到的宽度是仍然是 96px**
 对此在 [stackoverflow](https://stackoverflow.com/questions/8952909/letter-spacing-in-canvas-element/8955835#8955835) 中搜到的他人解释
-![re-get the canvas 2d ](measureText/image-2.png)
+![re-get the canvas 2d ](image-2.png)
 
 经过调试，目前最新版本的 Chrome ctx 的重新获取已经不是刚需
 
