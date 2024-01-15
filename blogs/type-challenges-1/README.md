@@ -136,6 +136,26 @@ interface Todo {
 type Keys = GetReadonlyKeys<Todo> // expected to be "title" | "description"
 ```
 #### 解析
+```ts
+type GetReadonlyKeys<T> = keyof {
+  [P in keyof T as Equal<{ [_ in P]: T }, { readonly [_ in P]: T }> extends true
+    ? P
+    : never]: any;
+};
+```
+主要思路：遍历对象 key 找出 readonly 的 key
+首先遍历与 `as` 操作前文有描述, 难点在于如何判断 key 是否是 readonly
+这里用到了 `.typeChallenges/test-utils.ts` 内置的 `Equal` 类型函数
+```ts
+export type Equal<X, Y> = (<T>() => T extends X ? 1 : 2) extends <T>() => T extends Y ? 1 : 2
+  ? true
+  : false
+```
+关于判断两个类型是否完全相等可以看这篇
+[Generic arrow functions in conditional types](https://stackoverflow.com/questions/75699574/generic-arrow-functions-in-conditional-types/75699960#75699960)
+
+回到解析 `Equal<{ [_ in P]: T }, { readonly [_ in P]: T }>` 的意思是给当前遍历的 key 手动加上 readonly, 然后判断是否相等，如果相等证明 key 本身就是 readonly, 最后再提取出遍历结果对象的 key, 其中 `{ [_ in P]: T }` 的 T 可以换成任何与 T 相关的类型
+
 ### 6
 #### 题目
 #### 解析
