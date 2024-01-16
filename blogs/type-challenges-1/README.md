@@ -5,10 +5,8 @@
 ### [一起来体操](https://github.com/type-challenges/type-challenges/blob/main/README.zh-CN.md)
 
 跟着序号学习体操题目中包含的 ts 知识点，查漏补缺
-本文是从 2-20，多数为 ts 内置类型的实现
-> 一些个人认为关键知识点会加粗展示
-> 参考答案指的是我做的仅供参考的答案，可以前往 issue 区查看更多大神的解法
-> 最后也会汇总列出问题的所有加粗点
+本文是从 2-10
+文章最后也会汇总问题包含的知识点
 
 ### 2 获取函数返回类型
 #### 题目
@@ -26,7 +24,7 @@ const fn = (v: boolean) => {
 type a = MyReturnType<typeof fn> // 应推导出 "1 | 2"
 ```
 #### 解析
-**考察的是 `infer` 的使用**，没有太多需要解释的
+**考察的是 `infer` 的使用**
 
 ```ts
 type MyReturnType<T> = T extends (...args: any[]) => infer R ? R : never
@@ -151,14 +149,64 @@ export type Equal<X, Y> = (<T>() => T extends X ? 1 : 2) extends <T>() => T exte
   ? true
   : false
 ```
-关于判断两个类型是否完全相等可以看这篇
-[Generic arrow functions in conditional types](https://stackoverflow.com/questions/75699574/generic-arrow-functions-in-conditional-types/75699960#75699960)
+**关于判断两个类型是否完全相等可以看这篇
+[Generic arrow functions in conditional types](https://stackoverflow.com/questions/75699574/generic-arrow-functions-in-conditional-types/75699960#75699960)**
 
 回到解析 `Equal<{ [_ in P]: T }, { readonly [_ in P]: T }>` 的意思是给当前遍历的 key 手动加上 readonly, 然后判断是否相等，如果相等证明 key 本身就是 readonly, 最后再提取出遍历结果对象的 key, 其中 `{ [_ in P]: T }` 的 T 可以换成任何与 T 相关的类型
 
-### 6
+### 6 简单的 Vue 类型
 #### 题目
+实现类似Vue的类型支持的简化版本。
+
+通过提供一个函数`SimpleVue`（类似于`Vue.extend`或`defineComponent`），它应该正确地推断出 computed 和 methods 内部的`this`类型。
+
+在此挑战中，我们假设`SimpleVue`接受只带有`data`，`computed`和`methods`字段的Object作为其唯一的参数，
+
+- `data`是一个简单的函数，它返回一个提供上下文`this`的对象，但是你无法在`data`中获取其他的计算属性或方法。
+
+- `computed`是将`this`作为上下文的函数的对象，进行一些计算并返回结果。在上下文中应暴露计算出的值而不是函数。
+
+- `methods`是函数的对象，其上下文也为`this`。函数中可以访问`data`，`computed`以及其他`methods`中的暴露的字段。 `computed`与`methods`的不同之处在于`methods`在上下文中按原样暴露为函数。
+
+`SimpleVue`的返回值类型可以是任意的。
+
+```ts
+const instance = SimpleVue({
+  data() {
+    return {
+      firstname: 'Type',
+      lastname: 'Challenges',
+      amount: 10,
+    }
+  },
+  computed: {
+    fullname() {
+      return this.firstname + ' ' + this.lastname
+    }
+  },
+  methods: {
+    hi() {
+      alert(this.fullname.toLowerCase())
+    }
+  }
+})
+```
 #### 解析
+```ts
+declare function SimpleVue<
+  TD,
+  TC extends { [key in string]: () => any },
+  TM
+>(options: {
+  data(this: undefined): TD;
+  computed: TC & ThisType<TD>;
+  methods: TM & ThisType<TD & { [P in keyof TC]: ReturnType<TC[P]> } & TM>;
+}): any;
+```
+主要思路: 通过 [ThisType\<Type\>](https://www.typescriptlang.org/docs/handbook/utility-types.html#thistypetype) 显式改变对象 this
+
+其中 `computed` 稍微特殊一点，需要解析函数的返回值 `{ [P in keyof TC]: ReturnType<TC[P]> }`
+
 ### 7
 #### 题目
 #### 解析
