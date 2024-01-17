@@ -274,9 +274,41 @@ type MyReadonly2<T, K extends keyof T = keyof T> = {
 题目 7 的升级版, 由于 readonly 不能根据条件动态赋予, 思路是:
 1. 将所有的 key 都变为 readonly
 2. 将非 K 的 key 覆盖为非 readonly
-### 9
+### 9 对象属性只读（递归）
 #### 题目
+实现一个泛型 `DeepReadonly<T>`，它将对象的每个参数及其子对象递归地设为只读。
+
+您可以假设在此挑战中我们仅处理对象。不考虑数组、函数、类等。但是，您仍然可以通过覆盖尽可能多的不同案例来挑战自己。
+
+例如
+
+```ts
+type X = { 
+  x: { 
+    a: 1
+    b: 'hi'
+  }
+  y: 'hey'
+}
+
+type Expected = { 
+  readonly x: { 
+    readonly a: 1
+    readonly b: 'hi'
+  }
+  readonly y: 'hey' 
+}
+
+type Todo = DeepReadonly<X> // should be same as `Expected`
+```
 #### 解析
+```ts
+type DeepReadonly<T> = {
+  readonly [P in keyof T]: keyof T[P] extends never ? T[P] : DeepReadonly<T[P]>;
+};
+```
+readonly 的递归版，为什么能使用 `extends never` 来过滤非对象请参考 [what is "extends never" used for?](https://stackoverflow.com/questions/68693054/what-is-extends-never-used-for/68693367)
+
 ### 10
 #### 题目
 #### 解析
