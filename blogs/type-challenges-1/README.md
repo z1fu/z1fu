@@ -2,11 +2,14 @@
   <img src='https://raw.githubusercontent.com/type-challenges/type-challenges/main/screenshots/logo.svg' width='400'/>
 </p>
 
-### [一起来体操](https://github.com/type-challenges/type-challenges/blob/main/README.zh-CN.md)
+### [一起来体操 (1)](https://github.com/type-challenges/type-challenges/blob/main/README.zh-CN.md)
 
-跟着序号学习体操题目中包含的 ts 知识点，查漏补缺
-本文是从 2-10
+跟着序号学习体操题目中包含的 ts 知识点第一篇, 查漏补缺
+题目范围 2~10
+
 文章最后也会汇总问题包含的知识点
+
+> 强烈建议使用 [VS Code 插件](https://marketplace.visualstudio.com/items?itemName=YRM.type-challenges) 进行体操活动
 
 ### 2 获取函数返回类型
 不使用 `ReturnType` 实现 TypeScript 的 `ReturnType<T>` 泛型。
@@ -24,14 +27,14 @@ type a = MyReturnType<typeof fn> // 应推导出 "1 | 2"
 ```
 <details><summary>解析</summary><br>
 
-**考察的是 `infer` 的使用**
+**考察 `infer` 的使用**
 
 ```ts
 type MyReturnType<T> = T extends (...args: any[]) => infer R ? R : never
 ```
-针对这道题有个注意点是 `extends` 后面的函数的参数声明，我刚打开这个题的时候
+针对这道题有个注意点是 `extends` 后面的函数的参数声明, 我刚打开这个题的时候
 
-某 gpt 自动补全为了 ` T extends () => infer R ? R : never`，带参数函数的 case 是无法通过的
+某 gpt 自动补全为了 ` T extends () => infer R ? R : never`, 带参数函数的 case 是无法通过的
 </details>
 
 ### 3 实现 Omit
@@ -82,7 +85,7 @@ type KindlessCircle = RemoveKindField<Circle>;
 3. `Property = "radius"`, `Exclude<"radius", "kind">` 为 `"radius"`
 4. 由于 **`never` 做 key 会被忽略**，所以 `KindlessCircle` 为 `{radius: number}` 达到移除 kind 属性的效果 
 
-回到题目，我们走一下过程：
+回到题目, 我们走一下遍历：
 1. 遍历 `keyof T` 未知个数
 2. 对每一个 `P` 进行判断，如果满足 `P extends K` 则返回 `never`，否则保留
 
@@ -122,7 +125,7 @@ type MyPick<T, K extends keyof T> = {
 </details>
 
 ### 5 获取只读属性
-实现泛型`GetReadonlyKeys<T>`，`GetReadonlyKeys<T>`返回由对象 T 所有只读属性的键组成的联合类型。
+实现泛型`GetReadonlyKeys<T>`, `GetReadonlyKeys<T>`返回由对象 T 所有只读属性的键组成的联合类型。
 
 例如
 
@@ -145,6 +148,7 @@ type GetReadonlyKeys<T> = keyof {
 };
 ```
 主要思路：遍历对象 key 找出 readonly 的 key
+
 首先遍历与 `as` 操作前文有描述, 难点在于如何判断 key 是否是 readonly
 这里用到了 `.typeChallenges/test-utils.ts` 内置的 `Equal` 类型函数
 ```ts
@@ -163,13 +167,13 @@ export type Equal<X, Y> = (<T>() => T extends X ? 1 : 2) extends <T>() => T exte
 
 通过提供一个函数`SimpleVue`（类似于`Vue.extend`或`defineComponent`），它应该正确地推断出 computed 和 methods 内部的`this`类型。
 
-在此挑战中，我们假设`SimpleVue`接受只带有`data`，`computed`和`methods`字段的Object作为其唯一的参数，
+在此挑战中，我们假设`SimpleVue`接受只带有`data`, `computed`和`methods`字段的Object作为其唯一的参数，
 
 - `data`是一个简单的函数，它返回一个提供上下文`this`的对象，但是你无法在`data`中获取其他的计算属性或方法。
 
 - `computed`是将`this`作为上下文的函数的对象，进行一些计算并返回结果。在上下文中应暴露计算出的值而不是函数。
 
-- `methods`是函数的对象，其上下文也为`this`。函数中可以访问`data`，`computed`以及其他`methods`中的暴露的字段。 `computed`与`methods`的不同之处在于`methods`在上下文中按原样暴露为函数。
+- `methods`是函数的对象，其上下文也为`this`。函数中可以访问`data`, `computed`以及其他`methods`中的暴露的字段。 `computed`与`methods`的不同之处在于`methods`在上下文中按原样暴露为函数。
 
 `SimpleVue`的返回值类型可以是任意的。
 
@@ -242,7 +246,7 @@ type MyReadonly<T extends Record<string, any>> = {
   readonly [P in keyof T]: T[P];
 };
 ```
-题目 5 囊括了的知识点，注意 `readonly` 声明的位置即可
+题目 5 囊括了的知识点, 注意 `readonly` 声明的位置即可
 </details>
 
 ### 8 对象部分属性只读
@@ -336,3 +340,19 @@ type TupleToUnion<T extends any[]> = T[number]
 ```
 通过下标, 将元组转为联合类型
 </details>
+
+### 汇总
+**[2]** 考察 `infer` 的使用
+
+**[3, 4, 5, 8]** [key mapping via as](https://www.typescriptlang.org/docs/handbook/2/mapped-types.html#key-remapping-via-as)
+
+**[5, 7, 8, 9]** readonly 标记的使用
+
+**[5]** 判断两个类型是否完全相等的技巧
+[Generic arrow functions in conditional types](https://stackoverflow.com/questions/75699574/generic-arrow-functions-in-conditional-types/75699960#75699960)
+
+**[6]** [ThisType\<Type\>](https://www.typescriptlang.org/docs/handbook/utility-types.html#thistypetype) 显式改变对象 this
+
+**[9]** `keyof T extends never` 来过滤非对象 [what is "extends never" used for?](https://stackoverflow.com/questions/68693054/what-is-extends-never-used-for/68693367)
+
+**[10]** 数组取下标实现元组转联合类型
